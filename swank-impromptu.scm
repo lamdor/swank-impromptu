@@ -1,4 +1,4 @@
-(sys:clear-log-view)
+(define nil '())
 
 ;;; Utility Functions
 (define hex-digit-values '(0 1 2 3 4 5 6 7 8 9 a b c d e f))
@@ -28,9 +28,27 @@
 (define (string-empty? str)
    (= 0 (string-length str)))
 
-(objc:call (objc:string->nsdata "abc") "length")
+;; Swank Protocol Methods
+(define (swank:connection-info)
+  '(:pid 1000
+    :style :spawn
+    :package (:name "impromptu" :prompt "impromptu>")
+    :lisp-implementation (:type "scheme" :name "Impromptu" :version "2.5")
+    :version "2010-12-10"))
 
-;; Swank
+;; TODO?
+(define (swank:swank-require requires))
+(define (swank:buffer-first-change file))
+(define (swank:eval-and-grab-output str))
+(define (swank:operator-arglist name pack))
+
+(define (swank:create-repl x)
+   '("impromptu" "impromptu"))
+
+(define (swank:interactive-eval str)
+   (eval (string->sexpr str)))
+
+;; Swank Server
 (define *swank:connections* '())
 
 (define (swank:serve socket)
@@ -38,11 +56,7 @@
   (let ((streams (io:tcp:get-streams-from-socket socket)))
     (set! *swank:connections* (cons streams *swank:connections*))))
 
-(define (swank:connection-info)
-  '(:pid 1000
-    :package (:name "impromptu" :prompt "impromptu>")
-    :lisp-implementation (:type "scheme" :name "Impromptu" :version "2.5")))
-
+;; TODO: handle OBJC outptu
 (define (swank:return-ok-result result id)
   `(:return (:ok ,result) ,id))
 
@@ -70,7 +84,6 @@
     (io:tcp:write-to-stream connection
                             (objc:string->nsdata
                              (string-append result-length result-str)))))
-(define (swank:listen))
 (define (swank:listen)
   (for-each (lambda (connection)
               (if (io:tcp:data-available? connection)
@@ -79,8 +92,6 @@
                    (swank:handle-event (swank:read-next-event connection)))))
             *swank:connections*)
   (callback (+ (now) 5000) 'swank:listen))
-
-(swank:listen)
 
 (define (swank:start)
   (if (io:tcp:start-server 4005 (ipc:get-process-name) "swank:serve")
