@@ -16,25 +16,28 @@
   (hexstring-conversion-accum 0 0 (reverse (string->list hexstring))))
 
 (define (number->hexstring num)
-   (objc:nsstring->string (objc:string:with-format "%06x" num)))
+  (objc:nsstring->string (objc:string:with-format "%06x" num)))
 
 (define (objc:nsdata->string data)
   (objc:nsstring->string (objc:make "NSString" "initWithData:encoding:" data 4)))
 
 (define (objc:string->nsdata str)
-   (objc:call (objc:string->nsstring str)
-              "dataUsingEncoding:" 4))
+  (objc:call (objc:string->nsstring str)
+             "dataUsingEncoding:" 4))
 
 (define (string-empty? str)
-   (= 0 (string-length str)))
+  (= 0 (string-length str)))
+
+(define (list-last lst)
+   (car (last-pair lst)))
 
 ;; Swank Protocol Methods
 (define (swank:connection-info)
   '(:pid 1000
-    :style :spawn
-    :package (:name "impromptu" :prompt "impromptu>")
-    :lisp-implementation (:type "scheme" :name "Impromptu" :version "2.5")
-    :version "2010-12-10"))
+         :style :spawn
+         :package (:name "impromptu" :prompt "impromptu>")
+         :lisp-implementation (:type "scheme" :name "Impromptu" :version "2.5")
+         :version "2010-12-10"))
 
 ;; TODO?
 (define (swank:swank-require requires))
@@ -43,10 +46,10 @@
 (define (swank:operator-arglist name pack))
 
 (define (swank:create-repl x)
-   '("impromptu" "impromptu"))
+  '("impromptu" "impromptu"))
 
 (define (swank:interactive-eval str)
-   (eval (string->sexpr str)))
+  (eval (string->sexpr str)))
 
 ;; Swank Server
 (define *swank:connections* '())
@@ -56,18 +59,23 @@
   (let ((streams (io:tcp:get-streams-from-socket socket)))
     (set! *swank:connections* (cons streams *swank:connections*))))
 
-;; TODO: handle OBJC outptu
+;; TODO: handle OBJC output
 (define (swank:return-ok-result result id)
   `(:return (:ok ,result) ,id))
 
+(define (swank:return-abort-result id)
+  `(:return (:abort) ,id))
+
 (define (swank:handle-event event)
   (print "event" event)
-  (unless (null? event)
-      (let ((event-type (car event)))
-        (cond ((equal? event-type ':emacs-rex)
-               (swank:return-ok-result
-                (eval (cadr event))
-                (list-ref event 4)))))))
+  (catch (begin (print-error "bad event" event)
+                (swank:return-abort-result (list-last event)))
+         (unless (null? event)
+                 (let ((event-type (car event)))
+                   (cond ((equal? event-type ':emacs-rex)
+                          (swank:return-ok-result
+                           (eval (cadr event))
+                           (list-last event))))))))
 
 (define (swank:read-next-event connection)
   (let* ((bytes-to-read-data (io:tcp:read-from-stream connection 6))
