@@ -29,7 +29,13 @@
   (= 0 (string-length str)))
 
 (define (list-last lst)
-   (car (last-pair lst)))
+  (car (last-pair lst)))
+
+(define (true-value? val)
+   (equal? #t val))
+
+(define (false-value? val)
+   (equal? #f val))
 
 ;; Swank Protocol Methods
 (define (swank:connection-info)
@@ -59,9 +65,15 @@
   (let ((streams (io:tcp:get-streams-from-socket socket)))
     (set! *swank:connections* (cons streams *swank:connections*))))
 
-;; TODO: handle OBJC output
 (define (swank:return-ok-result result id)
-  `(:return (:ok ,result) ,id))
+  `(:return (:ok ,(cond ((true-value? result) 't)
+                        ((false-value? result) 'f)
+                        ((objc? result)
+                         (string-append
+                          "<OBJC: "
+                          (objc:nsstring->string (objc:call result "description") )
+                          " >"))
+                        (else result))) ,id))
 
 (define (swank:return-abort-result id)
   `(:return (:abort) ,id))
@@ -101,9 +113,12 @@
             *swank:connections*)
   (callback (+ (now) 5000) 'swank:listen))
 
+(swank:listen)
+
 (define (swank:start)
   (if (io:tcp:start-server 4005 (ipc:get-process-name) "swank:serve")
       (swank:listen)
       (print "Starting swank failed")))
 
+(sys:livecoding-error-hook? #t)
 (swank:start)
