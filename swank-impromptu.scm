@@ -74,7 +74,7 @@
                  (let ((event-type (car event)))
                    (cond ((equal? event-type ':emacs-rex)
                           (swank:return-ok-result
-                           (eval (cadr event))
+                           (eval (cadr event) (interaction-environment))
                            (list-last event))))))))
 
 (define (swank:read-next-event connection)
