@@ -49,7 +49,7 @@
   '("impromptu" "impromptu"))
 
 (define (swank:interactive-eval str)
-  (eval (string->sexpr str)))
+  (eval (string->sexpr str) (interaction-environment)))
 
 ;; Swank Server
 (define *swank:connections* '())
