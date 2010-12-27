@@ -1,20 +1,21 @@
 #+OPTIONS:   H:3 num:nil toc:nil \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
 #+OPTIONS:   TeX:t LaTeX:t skip:nil d:nil todo:t pri:nil tags:not-in-toc
+#+STARTUP: oddeven
 
 * swank-impromptu
-*** This allows [[http://common-lisp.net/project/slime/][SLIME]] on Emacs to connect to the [[http://impromptu.moso.com.au/][Impromptu]] app
-*** Instructions
-***** Checkout and set up the symbolic link
+** This allows [[http://common-lisp.net/project/slime/][SLIME]] in Emacs to connect to the [[http://impromptu.moso.com.au/][Impromptu]] app
+** Instructions
+*** Checkout and set up the symbolic link
 #+BEGIN_SRC sh
   cd ~/Library/Application\ Support/Impromptu
   ln $WHERE_CHECKED_OUT/swank-impromptu.scm swank-impromptu.scm
 #+END_SRC
-***** Now when Impromptu starts up, it will also start up a swank server on port 4005
-***** Connect using Emacs via slime-connect in a scheme buffer with the slime-minor-mode
-*** Caveats
-***** Only a minority of swank functions implemented
-***** alpha quality, only built so far for my needs
-*** License
+*** Now when Impromptu starts up, it will also start up a swank server on port 4005
+*** Connect using Emacs via slime-connect in a scheme buffer with the slime-minor-mode
+** Caveats
+*** Only a minority of swank functions implemented
+*** alpha quality, only built so far for my needs
+** License
 Copyright (C) 2010 by Luke Amdor
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
