@@ -51,6 +51,8 @@
 (define (swank:eval-and-grab-output str))
 (define (swank:operator-arglist name pack))
 (define (swank:find-definitions-for-emacs func))
+(define (swank:load-file file)
+  (load file))
 
 (define (swank:create-repl x)
   '("impromptu" "impromptu"))
