@@ -32,10 +32,10 @@
   (car (last-pair lst)))
 
 (define (true-value? val)
-   (equal? #t val))
+  (equal? #t val))
 
 (define (false-value? val)
-   (equal? #f val))
+  (equal? #f val))
 
 ;; Swank Protocol Methods
 (define (swank:connection-info)
@@ -49,8 +49,25 @@
 (define (swank:swank-require requires))
 (define (swank:buffer-first-change file))
 (define (swank:eval-and-grab-output str))
-(define (swank:operator-arglist name pack))
 (define (swank:find-definitions-for-emacs func))
+(define (swank:completions start package))
+
+(define (swank:documentation-alist-for-name name)
+  (let ((result (objc:get-object-for-key (sys:get-documentation-dictionary) name)))
+    (if (objc:null? result) #f result)))
+
+(define (swank:get-arguments-from-closure-code name)
+  (let ((func (eval (string->atom name))))
+    (if (closure? func)
+        (cadr (get-closure-code func)))))
+
+(define (swank:operator-arglist name package)
+  (let ((doc-alist (swank:documentation-alist-for-name name)))
+    (if doc-alist
+        (map (lambda (arg) (string->atom (car arg)))
+             (cdr (assoc "arguments" doc-alist)))
+        (swank:get-arguments-from-closure-code name))))
+
 (define (swank:load-file file)
   (load file))
 
@@ -61,14 +78,8 @@
   (eval (string->sexpr str) (interaction-environment)))
 
 ;; Swank Server
-(define *swank:connections* '())
-
-(define (swank:serve socket)
-  (print 'connection-on-socket socket)
-  (let ((streams (io:tcp:get-streams-from-socket socket)))
-    (set! *swank:connections* (cons streams *swank:connections*))))
-
 (define (swank:return-ok-result result id)
+  (print "result" result)
   `(:return (:ok ,(cond ((true-value? result) 't)
                         ((false-value? result) 'f)
                         ((objc? result)
@@ -107,6 +118,14 @@
     (io:tcp:write-to-stream connection
                             (objc:string->nsdata
                              (string-append result-length result-str)))))
+
+(define *swank:connections* '())
+
+(define (swank:serve socket)
+  (print 'connection-on-socket socket)
+  (let ((streams (io:tcp:get-streams-from-socket socket)))
+    (set! *swank:connections* (cons streams *swank:connections*))))
+
 (define (swank:listen)
   (for-each (lambda (connection)
               (if (io:tcp:data-available? connection)
@@ -116,12 +135,9 @@
             *swank:connections*)
   (callback (+ (now) 5000) 'swank:listen))
 
-(swank:listen)
-
 (define (swank:start)
-  (if (io:tcp:start-server 4005 (ipc:get-process-name) "swank:serve")
-      (swank:listen)
-      (print "Starting swank failed")))
+  (io:tcp:start-server 4005 (ipc:get-process-name) "swank:serve")
+  (swank:listen))
 
 (sys:livecoding-error-hook? #t)
 (swank:start)
