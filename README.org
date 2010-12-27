@@ -3,18 +3,18 @@
 #+STARTUP: oddeven
 
 * swank-impromptu
-** This allows [[http://common-lisp.net/project/slime/][SLIME]] in Emacs to connect to the [[http://impromptu.moso.com.au/][Impromptu]] app
+  This allows [[http://common-lisp.net/project/slime/][SLIME]] in Emacs to connect to the [[http://impromptu.moso.com.au/][Impromptu]] app
 ** Instructions
-*** Checkout and set up the symbolic link
 #+BEGIN_SRC sh
   cd ~/Library/Application\ Support/Impromptu
   ln $WHERE_CHECKED_OUT/swank-impromptu.scm swank-impromptu.scm
 #+END_SRC
-*** Now when Impromptu starts up, it will also start up a swank server on port 4005
-*** Connect using Emacs via slime-connect in a scheme buffer with the slime-minor-mode
+   1. Checkout and set up the symbolic link
+   2. Now when Impromptu starts up, it will also start up a swank server on port 4005
+   3. Connect using Emacs via slime-connect in a scheme buffer with the slime-minor-mode
 ** Caveats
-*** Only a minority of swank functions implemented
-*** alpha quality, only built so far for my needs
+   - Only a minority of swank functions implemented
+   - alpha quality, only built so far for my needs
 ** License
 Copyright (C) 2010 by Luke Amdor
 
