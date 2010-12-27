@@ -50,6 +50,7 @@
 (define (swank:buffer-first-change file))
 (define (swank:eval-and-grab-output str))
 (define (swank:operator-arglist name pack))
+(define (swank:find-definitions-for-emacs func))
 
 (define (swank:create-repl x)
   '("impromptu" "impromptu"))
